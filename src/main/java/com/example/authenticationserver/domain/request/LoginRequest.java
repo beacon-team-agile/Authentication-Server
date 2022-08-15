@@ -1,2 +1,11 @@
-package com.example.authenticationserver.domain.request;public class LoginRequest {
+package com.example.authenticationserver.domain.request;
+
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+public class LoginRequest {
+    private String username;
+    private String password;
 }
