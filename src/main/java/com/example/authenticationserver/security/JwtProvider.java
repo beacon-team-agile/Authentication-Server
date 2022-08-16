@@ -34,8 +34,6 @@ public class JwtProvider {
             return Optional.empty();
         }
 
-        System.out.println("Prefixed Token " + prefixedToken);
-
         String token = prefixedToken.substring(7);
 
         Claims claims = Jwts.parser().setSigningKey(key).parseClaimsJws(token).getBody(); // decode
@@ -55,7 +53,6 @@ public class JwtProvider {
 
     // create jwt from a UserDetail
     public String createToken(UserDetails userDetails){
-        System.out.println(userDetails);
         Claims claims1 = Jwts.claims().setSubject(userDetails.getUsername()); // user identifier
         Claims claims2 = Jwts.claims().setSubject(userDetails.getPassword()); // user identifier
         claims1.put("permissions", userDetails.getAuthorities()); // user permission
