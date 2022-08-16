@@ -1,8 +1,12 @@
 package com.example.authenticationserver.domain.entity;
 
 import lombok.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
+import java.io.Serializable;
+import java.util.Collection;
 import java.util.List;
 
 @Entity
@@ -12,11 +16,14 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class User {
+public class User implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    private String username;
+
+    @Column(name = "username")
+    private String userName;
+
     private String email;
 
     @Column(name = "`password`")
@@ -33,7 +40,7 @@ public class User {
     public String toString() {
         return "User{" +
                 "id=" + id +
-                ", username='" + username + '\'' +
+                ", username='" + userName + '\'' +
                 ", password='" + password + '\'' +
                 ", status=" + status +
                 ", permission=" + userRoles +

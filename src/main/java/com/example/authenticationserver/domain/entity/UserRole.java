@@ -27,6 +27,9 @@ public class UserRole {
     @Column(name = "last_modification_date")
     private String lastModificationDate;
 
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    private Role roleEntity;
+
     @Override
     public String toString() {
         return "UserRole{" +
