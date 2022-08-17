@@ -169,6 +169,8 @@ public class AuthenticationController {
                 return "Expired Token";
             }
         }
+
+
         //Redirect to composite
         response.sendRedirect("http://localhost:8095/composite-service");
         return "redirected";
