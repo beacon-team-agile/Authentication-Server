@@ -31,8 +31,11 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.Date;
+import java.util.Locale;
 
 @RestController
 @RequestMapping("/credential")
@@ -95,7 +98,6 @@ public class AuthenticationController {
 
         //Get current server time
         Date date = new java.util.Date();
-        System.out.println(date.toString());
 
         //Save it into the RegistrationToken table in Authentication database
         Integer id = Integer.valueOf(request.getRequesterId());
@@ -139,10 +141,37 @@ public class AuthenticationController {
                 .build();
     }
 
-    @PostMapping("/register")
-    public String registerRequest(@RequestParam(("token")) String token) {
-        //Redirect to
-        return "";
+    @GetMapping("/register")
+    public String registerRequest(@RequestParam(("token")) String token,
+                                  HttpServletResponse response) throws ParseException, IOException {
+        //Validate token
+        RegistrationToken registrationToken = regTokenService.getExistingToken(token);
+
+        //Invalid token
+        if (registrationToken == null) {
+            return "Invalid token";
+        }
+
+        //Expired token
+        if (registrationToken.getExpirationDate() == null) {
+            return "Invalid token setup";
+        } else {
+            String registeredDateString = registrationToken.getExpirationDate();
+            SimpleDateFormat formatter = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy", Locale.ENGLISH);
+            Date registeredDate = formatter.parse(registeredDateString);
+            Date currentDate = new java.util.Date();
+
+            long registeredDateTimeInMillis = registeredDate.getTime();
+            long currentDateTimeInMillis = currentDate.getTime();
+            System.out.println(currentDateTimeInMillis);
+            System.out.println(registeredDateTimeInMillis);
+            if (currentDateTimeInMillis - 10800000 > registeredDateTimeInMillis) { //pass
+                return "Expired Token";
+            }
+        }
+        //Redirect to composite
+        response.sendRedirect("http://localhost:8095/composite-service");
+        return "redirected";
     }
 }
 
