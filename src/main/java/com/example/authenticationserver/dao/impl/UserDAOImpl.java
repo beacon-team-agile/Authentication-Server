@@ -44,12 +44,13 @@ public class UserDAOImpl extends AbstractHibernateDAO<User> implements UserDAO {
         return result.orElse(null);
     }
 
-    public Optional<User> findUserByUserName(String userName) {
+    public User findUserByUserName(String username) {
+        System.out.println(username);
         initializeUserSession();
         userCR.select(userRoot);
-        //userCR.where(cb.equal(userRoot.get("username"), userName));
+        userCR.where(cb.equal(userRoot.get("username"), username));
         Query<User> query = session.createQuery(userCR);
-        return query.getResultList().stream().findAny();
+        return query.getResultList().stream().findAny().orElse(null);
     }
 
     @Override
@@ -73,10 +74,7 @@ public class UserDAOImpl extends AbstractHibernateDAO<User> implements UserDAO {
         userRoleCR.select(userRoleRoot);
         userRoleCR.where(cb.equal(userRoleRoot.get("id"), userId));
         Query<UserRole> query1 = session.createQuery(userRoleCR);
-        UserRole userDetail = query1.getResultList().stream().findFirst().orElse(null);
-        if (userDetail != null) {
-            session.delete(userDetail);
-        }
+        query1.getResultList().stream().findFirst().ifPresent(userDetail -> session.delete(userDetail));
 
         //Delete user data first
         userCR.select(userRoot);
@@ -108,7 +106,7 @@ public class UserDAOImpl extends AbstractHibernateDAO<User> implements UserDAO {
     public Optional<User> findUserByName(String username) {
         initializeUserSession();
         userCR.select(userRoot);
-        userCR.where(cb.equal(userRoot.get("username"), username));
+        userCR.where(cb.equal(userRoot.get("userName"), username));
         Query<User> query = session.createQuery(userCR);
         return query.getResultList().stream().findFirst();
     }

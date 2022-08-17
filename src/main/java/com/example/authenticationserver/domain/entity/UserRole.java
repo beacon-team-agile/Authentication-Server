@@ -2,6 +2,7 @@ package com.example.authenticationserver.domain.entity;
 import lombok.*;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.List;
 
 @Entity
@@ -11,7 +12,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserRole {
+public class UserRole implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -26,9 +27,6 @@ public class UserRole {
     private String createDate;
     @Column(name = "last_modification_date")
     private String lastModificationDate;
-
-    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    private Role roleEntity;
 
     @Override
     public String toString() {
