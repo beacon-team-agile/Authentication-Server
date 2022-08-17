@@ -3,6 +3,7 @@ package com.example.authenticationserver.domain.entity;
 import lombok.*;
 
 import javax.persistence.*;
+import java.io.Serializable;
 
 @Entity
 @Table(name="RegistrationToken")
@@ -11,7 +12,7 @@ import javax.persistence.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class RegistrationToken {
+public class RegistrationToken implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -22,9 +23,8 @@ public class RegistrationToken {
     @Column(name = "expiration_date")
     private String expirationDate;
 
-    @OneToOne
-    @JoinColumn(name = "create_by_user")
-    private User createBy;
+    @Column(name = "create_by")
+    private Integer createBy;
 
     @Override
     public String toString() {
