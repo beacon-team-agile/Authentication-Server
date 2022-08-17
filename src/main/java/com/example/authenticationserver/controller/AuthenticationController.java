@@ -245,11 +245,8 @@ public class AuthenticationController {
 
         userRoleService.addUserRole(userRole);
 
-        //Redirect to composite
-        //Put token in the header
-
-        //response.sendRedirect("./register-credential");
-        return "redirected";
+        //Redirect to composite onborad form
+        return jwtToken;
     }
 }
 
