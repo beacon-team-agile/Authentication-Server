@@ -3,6 +3,7 @@ package com.example.authenticationserver.controller;
 import com.example.authenticationserver.dao.impl.UserDAOImpl;
 import com.example.authenticationserver.domain.entity.RegistrationToken;
 import com.example.authenticationserver.domain.entity.User;
+import com.example.authenticationserver.domain.entity.UserRole;
 import com.example.authenticationserver.domain.request.*;
 import com.example.authenticationserver.domain.response.LoginResponse;
 import com.example.authenticationserver.security.AuthUserDetail;
@@ -10,14 +11,17 @@ import com.example.authenticationserver.security.JwtFilter;
 import com.example.authenticationserver.security.JwtProvider;
 import com.example.authenticationserver.security.JwtTokenGenerator;
 import com.example.authenticationserver.service.RegTokenService;
+import com.example.authenticationserver.service.UserRoleService;
 import com.example.authenticationserver.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
@@ -28,6 +32,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/credential")
@@ -37,11 +44,18 @@ public class AuthenticationController {
     private JwtFilter jwtFilter;
 
     private UserService userService;
+    private UserRoleService userRoleService;
 
     @Autowired
     public void setUserService(UserService userService) {
         this.userService = userService;
     }
+
+    @Autowired
+    public void setUserRoleService(UserRoleService userRoleService) {
+        this.userRoleService = userRoleService;
+    }
+
 
     private final RegTokenService regTokenService;
 
@@ -76,6 +90,7 @@ public class AuthenticationController {
      * @return
      */
     @PostMapping("/generate")
+    @PreAuthorize("hasAuthority('hr')")
     public ResponseEntity<String> generateToken(@RequestBody TokenRequest request) {
         //Generate token with expiration date
         String tokenGenerateInput = request.getRequesterId();
@@ -119,25 +134,46 @@ public class AuthenticationController {
         try{
             authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
-                            request.getUserName(),
+                            request.getUsername(),
                             request.getPassword())
             );
-        } catch (AuthenticationException e){
-            e.printStackTrace();
+        } catch(BadCredentialsException badCredentialsException) {
+            //badCredentialsException.printStackTrace();
             return LoginResponse.builder()
-                    .message("User not found ")
+                    .message("User not found")
+                    .token("")
+                    .build();
+        } catch (AuthenticationException e){
+            //e.printStackTrace();
+            return LoginResponse.builder()
+                    .message("User not found")
                     .token("")
                     .build();
         }
 
         AuthUserDetail authUserDetail = (AuthUserDetail) authentication.getPrincipal();
 
+        Set<String> roles = authUserDetail.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority).collect(Collectors.toSet());
+        String authority = roles.stream().findAny().orElse("");
         String token = jwtProvider.createToken(authUserDetail);
-
-        return LoginResponse.builder()
-                .message("Welcome ")// + authUserDetail.getUsername()
-                .token(token)
-                .build();
+        System.out.println("Authority: " + authority);
+        if (authority.equals("hr")) {
+            return LoginResponse.builder()
+                    .message("Welcome HR!")// + authUserDetail.getUsername()
+                    .token(token)
+                    .build();
+        } else if (authority.equals("employee")) {
+            return LoginResponse.builder()
+                    .message("Welcome Employee")// + authUserDetail.getUsername()
+                    .token(token)
+                    .build();
+        } else {
+            return LoginResponse.builder()
+                    .message("Unauthorized")// + authUserDetail.getUsername()
+                    .token(null)
+                    .build();
+        }
     }
 
     @PostMapping("/register")
@@ -190,13 +226,24 @@ public class AuthenticationController {
 
         //Add user to the database
         User newUser = User.builder()
-                .userName(registerFormRequest.getUsername())
+                .username(registerFormRequest.getUsername())
                 .password(registerFormRequest.getPassword())
                 .email(registerFormRequest.getEmail())
                 .createDate(currentTimeStamp.toString())
-                .lastModificationDate(currentTimeStamp.toString()).build();
+                .lastModificationDate(currentTimeStamp.toString())
+                .build();
 
-        userService.creatUser(newUser);
+        Integer userId = userService.creatUser(newUser);
+
+        UserRole userRole = UserRole.builder()
+                .userId(userId)
+                .roleId(1)
+                .activeFlag(true)
+                .createDate(currentTimeStamp.toString())
+                .lastModificationDate(currentTimeStamp.toString())
+                .build();
+
+        userRoleService.addUserRole(userRole);
 
         //Redirect to composite
         //Put token in the header

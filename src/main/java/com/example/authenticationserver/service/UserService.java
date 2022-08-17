@@ -1,5 +1,6 @@
 package com.example.authenticationserver.service;
 
+import com.example.authenticationserver.dao.impl.RoleDAOImpl;
 import com.example.authenticationserver.dao.impl.UserDAOImpl;
 import com.example.authenticationserver.domain.entity.Role;
 import com.example.authenticationserver.domain.entity.User;
@@ -23,10 +24,13 @@ import java.util.Optional;
 public class UserService implements UserDetailsService {
 
     private final UserDAOImpl hibernateUserDAO;
+    private final RoleDAOImpl roleDAO;
 
     @Autowired
-    public UserService(UserDAOImpl hibernateUserDAO) {
+    public UserService(UserDAOImpl hibernateUserDAO,
+                       RoleDAOImpl roleDAO) {
         this.hibernateUserDAO = hibernateUserDAO;
+        this.roleDAO = roleDAO;
     }
 
     @Transactional
@@ -52,15 +56,16 @@ public class UserService implements UserDetailsService {
     @Transactional
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Optional<User> userOptional = hibernateUserDAO.findUserByUserName(username);
+        User user = hibernateUserDAO.findUserByUserName(username);
 
-        if (!userOptional.isPresent()){
+        if (user == null){
             throw new UsernameNotFoundException("Username does not exist");
         }
 
-        User user = userOptional.get(); // database user
+        System.out.println(user.toString());
+
         return AuthUserDetail.builder()
-                .username(user.getUserName())
+                .username(user.getUsername())
                 .password(new BCryptPasswordEncoder().encode(user.getPassword()))
                 .authorities(getAuthoritiesFromUser(user))
                 .accountNonExpired(true)
@@ -70,20 +75,18 @@ public class UserService implements UserDetailsService {
                 .build();
     }
 
-    private List<GrantedAuthority> getAuthoritiesFromUser(User user){
+    @Transactional
+    public List<GrantedAuthority> getAuthoritiesFromUser(User user){
         List<GrantedAuthority> userAuthorities = new ArrayList<>();
 
         if (user.getUserRoles() == null) {
             return null;
-        } else {
-            System.out.println(user.getUserRoles());
         }
 
         for (UserRole userRole : user.getUserRoles()){
-            Role role = userRole.getRoleEntity();
-            if (role != null) {
-                userAuthorities.add(new SimpleGrantedAuthority(role.getRoleName()));
-            }
+            Integer id = userRole.getRoleId();
+            Optional<Role> roleOptional = roleDAO.findRoleById(id);
+            roleOptional.ifPresent(role -> userAuthorities.add(new SimpleGrantedAuthority(role.getRoleName())));
         }
 
         return userAuthorities;
