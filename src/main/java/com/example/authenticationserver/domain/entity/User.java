@@ -33,9 +33,6 @@ public class User implements Serializable {
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "userId")
     private List<UserRole> userRoles;
 
-    @OneToOne(fetch = FetchType.EAGER)
-    private RegistrationToken registrationToken;
-
     @Override
     public String toString() {
         return "User{" +
@@ -44,7 +41,6 @@ public class User implements Serializable {
                 ", password='" + password + '\'' +
                 ", status=" + status +
                 ", permission=" + userRoles +
-                ", permission=" + registrationToken +
                 '}';
     }
 }
