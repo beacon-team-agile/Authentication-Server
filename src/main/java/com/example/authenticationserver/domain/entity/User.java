@@ -1,12 +1,9 @@
 package com.example.authenticationserver.domain.entity;
 
 import lombok.*;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.List;
 
 @Entity
@@ -29,6 +26,12 @@ public class User implements Serializable {
     @Column(name = "`password`")
     private String password;
     private boolean status;
+
+    @Column(name = "create_date")
+    private String createDate;
+
+    @Column(name = "last_modification_date")
+    private String lastModificationDate;
 
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "userId")
     private List<UserRole> userRoles;
