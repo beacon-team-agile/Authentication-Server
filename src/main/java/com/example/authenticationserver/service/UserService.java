@@ -54,6 +54,11 @@ public class UserService implements UserDetailsService {
     }
 
     @Transactional
+    public void setUserFlag(Integer userId, boolean flag) {
+        hibernateUserDAO.setUserStatus(userId, flag);
+    }
+
+    @Transactional
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = hibernateUserDAO.findUserByUserName(username);
@@ -61,8 +66,6 @@ public class UserService implements UserDetailsService {
         if (user == null){
             throw new UsernameNotFoundException("Username does not exist");
         }
-
-        System.out.println(user.toString());
 
         return AuthUserDetail.builder()
                 .username(user.getUsername())
@@ -90,5 +93,10 @@ public class UserService implements UserDetailsService {
         }
 
         return userAuthorities;
+    }
+
+    @Transactional
+    public User getUserByName(String username) {
+        return hibernateUserDAO.findUserByUserName(username);
     }
 }

@@ -98,7 +98,7 @@ public class UserDAOImpl extends AbstractHibernateDAO<User> implements UserDAO {
         if (user != null) {
             System.out.println("Updating user: " + user.getId() + " to: " + activate);
             session = getCurrentSession();
-            user.setStatus(activate);
+            user.setActiveFlag(activate);
             session.update(user);
         }
     }

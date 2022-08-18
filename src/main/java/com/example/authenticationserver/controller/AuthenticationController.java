@@ -128,8 +128,21 @@ public class AuthenticationController {
         return response;
     }
 
+    @PostMapping("/enableEmployee")
+    @PreAuthorize("hasAuthority('hr')")
+    public void enableUser(@RequestParam(value = "userId") String userId) {
+        userService.setUserFlag(Integer.valueOf(userId), true);
+    }
+
+    @PostMapping("/disableEmployee")
+    @PreAuthorize("hasAuthority('hr')")
+    public void disableUser(@RequestParam(value = "userId") String userId) {
+        userService.setUserFlag(Integer.valueOf(userId), false);
+    }
+
     @PostMapping("/login")
-    public LoginResponse loginRequest(@RequestBody LoginRequest request) {
+    public LoginResponse loginRequest(@RequestBody LoginRequest request,
+                                      HttpServletResponse response) {
         Authentication authentication = null;
         try{
             authentication = authenticationManager.authenticate(
@@ -151,24 +164,41 @@ public class AuthenticationController {
                     .build();
         }
 
+        //Check user status
+        User user = userService.getUserByName(request.getUsername());
+        if (user == null) {
+            return LoginResponse.builder()
+                    .message("Unregistered user")// + authUserDetail.getUsername()
+                    .token("")
+                    .build();
+        } else if (!user.isActiveFlag()) {
+            return LoginResponse.builder()
+                    .message("Please wait for HR to review your application")// + authUserDetail.getUsername()
+                    .token("")
+                    .build();
+        }
+
         AuthUserDetail authUserDetail = (AuthUserDetail) authentication.getPrincipal();
 
         Set<String> roles = authUserDetail.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority).collect(Collectors.toSet());
         String authority = roles.stream().findAny().orElse("");
         String token = jwtProvider.createToken(authUserDetail);
-        System.out.println("Authority: " + authority);
+
         if (authority.equals("hr")) {
+            //Redirect to show status tracking page
+
             return LoginResponse.builder()
                     .message("Welcome HR!")// + authUserDetail.getUsername()
                     .token(token)
                     .build();
         } else if (authority.equals("employee")) {
             return LoginResponse.builder()
-                    .message("Welcome Employee")// + authUserDetail.getUsername()
+                    .message("Welcome HR!")// + authUserDetail.getUsername()
                     .token(token)
                     .build();
         } else {
+
             return LoginResponse.builder()
                     .message("Unauthorized")// + authUserDetail.getUsername()
                     .token(null)
@@ -216,10 +246,10 @@ public class AuthenticationController {
                             registerFormRequest.getPassword())
             );
         } catch (AuthenticationException e){
-            System.out.println("Provided credential is invalid.");
             throw new BadCredentialsException("Provided credential is invalid.");
         }
 
+        //We can add duplicate user identifier
 
         AuthUserDetail authUserDetail = (AuthUserDetail) authentication.getPrincipal();
         String jwtToken = jwtProvider.createToken(authUserDetail);
