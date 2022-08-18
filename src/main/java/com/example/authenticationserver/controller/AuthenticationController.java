@@ -236,6 +236,27 @@ public class AuthenticationController {
 
         Date currentTimeStamp = new java.util.Date();
 
+        //Add user to the database
+        User newUser = User.builder()
+                .username(registerFormRequest.getUsername())
+                .password(registerFormRequest.getPassword())
+                .email(registerFormRequest.getEmail())
+                .createDate(currentTimeStamp.toString())
+                .lastModificationDate(currentTimeStamp.toString())
+                .build();
+
+        Integer userId = userService.creatUser(newUser);
+
+        UserRole userRole = UserRole.builder()
+                .userId(userId)
+                .roleId(5)
+                .activeFlag(true)
+                .createDate(currentTimeStamp.toString())
+                .lastModificationDate(currentTimeStamp.toString())
+                .build();
+
+        userRoleService.addUserRole(userRole);
+
         //Get user token
         Authentication authentication;
 
@@ -254,28 +275,8 @@ public class AuthenticationController {
         AuthUserDetail authUserDetail = (AuthUserDetail) authentication.getPrincipal();
         String jwtToken = jwtProvider.createToken(authUserDetail);
 
-        //Add user to the database
-        User newUser = User.builder()
-                .username(registerFormRequest.getUsername())
-                .password(registerFormRequest.getPassword())
-                .email(registerFormRequest.getEmail())
-                .createDate(currentTimeStamp.toString())
-                .lastModificationDate(currentTimeStamp.toString())
-                .build();
 
-        Integer userId = userService.creatUser(newUser);
-
-        UserRole userRole = UserRole.builder()
-                .userId(userId)
-                .roleId(1)
-                .activeFlag(true)
-                .createDate(currentTimeStamp.toString())
-                .lastModificationDate(currentTimeStamp.toString())
-                .build();
-
-        userRoleService.addUserRole(userRole);
-
-        //Redirect to composite onborad form
+        //return token
         return jwtToken;
     }
 }

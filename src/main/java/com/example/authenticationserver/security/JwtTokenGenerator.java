@@ -43,7 +43,6 @@ public class JwtTokenGenerator {
         return Jwts.builder().setClaims(claims).setSubject(subject).setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationInMs))
                 .signWith(SignatureAlgorithm.HS512, secret).compact();
-
     }
 
     public String generateToken(String tokenGenerateKey) {
@@ -75,11 +74,14 @@ public class JwtTokenGenerator {
 
         Boolean isEmployee = claims.get("employee", Boolean.class);
         Boolean isHR = claims.get("hr", Boolean.class);
+        Boolean isNonEmployee = claims.get("nonemployee", Boolean.class);
 
         if (isHR) {
             roles = Collections.singletonList(new SimpleGrantedAuthority("hr"));
         } else if (isEmployee) {
             roles = Collections.singletonList(new SimpleGrantedAuthority("employee"));
+        } else if (isNonEmployee) {
+            roles = Collections.singletonList(new SimpleGrantedAuthority("nonemployee"));
         }
         return roles;
     }

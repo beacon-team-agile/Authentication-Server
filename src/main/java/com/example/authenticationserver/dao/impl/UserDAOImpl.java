@@ -45,7 +45,6 @@ public class UserDAOImpl extends AbstractHibernateDAO<User> implements UserDAO {
     }
 
     public User findUserByUserName(String username) {
-        System.out.println(username);
         initializeUserSession();
         userCR.select(userRoot);
         userCR.where(cb.equal(userRoot.get("username"), username));
@@ -63,7 +62,6 @@ public class UserDAOImpl extends AbstractHibernateDAO<User> implements UserDAO {
         session = getCurrentSession();
         session.save(userRole);
     }
-
 
     @Override
     public User deleteUser(Integer userId) {
