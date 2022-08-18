@@ -24,7 +24,9 @@ public class User implements Serializable {
 
     @Column(name = "`password`")
     private String password;
-    private boolean status;
+
+    @Column(name = "active_flag")
+    private boolean activeFlag;
 
     @Column(name = "create_date")
     private String createDate;
@@ -41,7 +43,7 @@ public class User implements Serializable {
                 "id=" + id +
                 ", username='" + username + '\'' +
                 ", password='" + password + '\'' +
-                ", status=" + status +
+                ", status=" + activeFlag +
                 ", permission=" + userRoles +
                 '}';
     }

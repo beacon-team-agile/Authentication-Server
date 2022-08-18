@@ -62,8 +62,6 @@ public class UserService implements UserDetailsService {
             throw new UsernameNotFoundException("Username does not exist");
         }
 
-        System.out.println(user.toString());
-
         return AuthUserDetail.builder()
                 .username(user.getUsername())
                 .password(new BCryptPasswordEncoder().encode(user.getPassword()))
@@ -90,5 +88,10 @@ public class UserService implements UserDetailsService {
         }
 
         return userAuthorities;
+    }
+
+    @Transactional
+    public User getUserByName(String username) {
+        return hibernateUserDAO.findUserByUserName(username);
     }
 }
