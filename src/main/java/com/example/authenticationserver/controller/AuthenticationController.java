@@ -128,6 +128,18 @@ public class AuthenticationController {
         return response;
     }
 
+    @PostMapping("/enableEmployee")
+    @PreAuthorize("hasAuthority('hr')")
+    public void enableUser(@RequestParam(value = "userId") String userId) {
+        userService.setUserFlag(Integer.valueOf(userId), true);
+    }
+
+    @PostMapping("/disableEmployee")
+    @PreAuthorize("hasAuthority('hr')")
+    public void disableUser(@RequestParam(value = "userId") String userId) {
+        userService.setUserFlag(Integer.valueOf(userId), false);
+    }
+
     @PostMapping("/login")
     public LoginResponse loginRequest(@RequestBody LoginRequest request,
                                       HttpServletResponse response) {

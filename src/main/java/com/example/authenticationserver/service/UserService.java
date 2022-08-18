@@ -54,6 +54,11 @@ public class UserService implements UserDetailsService {
     }
 
     @Transactional
+    public void setUserFlag(Integer userId, boolean flag) {
+        hibernateUserDAO.setUserStatus(userId, flag);
+    }
+
+    @Transactional
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = hibernateUserDAO.findUserByUserName(username);
