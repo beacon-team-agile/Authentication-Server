@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.Date;
 
 @Service
 public class UserRoleService {
@@ -22,6 +23,17 @@ public class UserRoleService {
     @Transactional
     public void addUserRole(UserRole userRole) {
         userRoleDAO.add(userRole);
+    }
+
+    @Transactional
+    public void setUserToEmployee(Integer userId) {
+        Date currentDate = new java.util.Date();
+        UserRole userrole = UserRole.builder().userId(userId)
+                .roleId(1)
+                .activeFlag(true)
+                .createDate(currentDate.toString())
+                .lastModificationDate(currentDate.toString()).build();
+        userRoleDAO.add(userrole);
     }
 
 }

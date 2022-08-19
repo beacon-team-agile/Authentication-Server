@@ -131,6 +131,10 @@ public class AuthenticationController {
     @PostMapping("/enableEmployee")
     @PreAuthorize("hasAuthority('hr')")
     public void enableUser(@RequestParam(value = "userId") String userId) {
+        //increase user authority to employee
+        userRoleService.setUserToEmployee(Integer.valueOf(userId));
+
+        //set user authority to inactive
         userService.setUserFlag(Integer.valueOf(userId), true);
     }
 
