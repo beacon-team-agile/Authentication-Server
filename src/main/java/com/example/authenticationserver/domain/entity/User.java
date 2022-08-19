@@ -43,7 +43,7 @@ public class User implements Serializable {
                 "id=" + id +
                 ", username='" + username + '\'' +
                 ", password='" + password + '\'' +
-                ", status=" + activeFlag +
+                ", activeFlag=" + activeFlag +
                 ", permission=" + userRoles +
                 '}';
     }

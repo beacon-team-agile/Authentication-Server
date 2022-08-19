@@ -60,8 +60,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .addFilterAfter(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeRequests()
                 .antMatchers("/authentication-service/credential/login").permitAll()
-                //Remove below line when authorization is implemented
-                .antMatchers("/authentication-service//credential/*").permitAll()
+                .antMatchers("/authentication-service/credential/*").permitAll()
                 .anyRequest()
                 .authenticated();
     }

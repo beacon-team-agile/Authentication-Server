@@ -131,6 +131,10 @@ public class AuthenticationController {
     @PostMapping("/enableEmployee")
     @PreAuthorize("hasAuthority('hr')")
     public void enableUser(@RequestParam(value = "userId") String userId) {
+        //increase user authority to employee
+        userRoleService.setUserToEmployee(Integer.valueOf(userId));
+
+        //set user authority to inactive
         userService.setUserFlag(Integer.valueOf(userId), true);
     }
 
@@ -197,6 +201,11 @@ public class AuthenticationController {
                     .message("Welcome HR!")// + authUserDetail.getUsername()
                     .token(token)
                     .build();
+        } else if (authority.equals("nonemployee")) {
+            return LoginResponse.builder()
+                    .message("Welcome User!")// + authUserDetail.getUsername()
+                    .token(token)
+                    .build();
         } else {
 
             return LoginResponse.builder()
@@ -236,6 +245,27 @@ public class AuthenticationController {
 
         Date currentTimeStamp = new java.util.Date();
 
+        //Add user to the database
+        User newUser = User.builder()
+                .username(registerFormRequest.getUsername())
+                .password(registerFormRequest.getPassword())
+                .email(registerFormRequest.getEmail())
+                .createDate(currentTimeStamp.toString())
+                .lastModificationDate(currentTimeStamp.toString())
+                .build();
+
+        Integer userId = userService.creatUser(newUser);
+
+        UserRole userRole = UserRole.builder()
+                .userId(userId)
+                .roleId(5)
+                .activeFlag(true)
+                .createDate(currentTimeStamp.toString())
+                .lastModificationDate(currentTimeStamp.toString())
+                .build();
+
+        userRoleService.addUserRole(userRole);
+
         //Get user token
         Authentication authentication;
 
@@ -254,28 +284,8 @@ public class AuthenticationController {
         AuthUserDetail authUserDetail = (AuthUserDetail) authentication.getPrincipal();
         String jwtToken = jwtProvider.createToken(authUserDetail);
 
-        //Add user to the database
-        User newUser = User.builder()
-                .username(registerFormRequest.getUsername())
-                .password(registerFormRequest.getPassword())
-                .email(registerFormRequest.getEmail())
-                .createDate(currentTimeStamp.toString())
-                .lastModificationDate(currentTimeStamp.toString())
-                .build();
 
-        Integer userId = userService.creatUser(newUser);
-
-        UserRole userRole = UserRole.builder()
-                .userId(userId)
-                .roleId(1)
-                .activeFlag(true)
-                .createDate(currentTimeStamp.toString())
-                .lastModificationDate(currentTimeStamp.toString())
-                .build();
-
-        userRoleService.addUserRole(userRole);
-
-        //Redirect to composite onborad form
+        //return token
         return jwtToken;
     }
 }
