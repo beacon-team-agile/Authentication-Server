@@ -201,6 +201,11 @@ public class AuthenticationController {
                     .message("Welcome HR!")// + authUserDetail.getUsername()
                     .token(token)
                     .build();
+        } else if (authority.equals("nonemployee")) {
+            return LoginResponse.builder()
+                    .message("Welcome User!")// + authUserDetail.getUsername()
+                    .token(token)
+                    .build();
         } else {
 
             return LoginResponse.builder()
